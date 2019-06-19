@@ -1,0 +1,67 @@
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'com.squareup.sqldelight'
+
+android {
+    compileSdkVersion 28
+    buildToolsVersion "29.0.0"
+
+
+    defaultConfig {
+        minSdkVersion 19
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles 'consumer-rules.pro'
+        multiDexEnabled true
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+}
+
+// For Parcelize
+androidExtensions {
+    experimental = true
+}
+sqldelight {
+    StoreDatabase { // Rename the generated entry point from the default "Database"
+        packageName = "com.example.sqldelightbug" // Package where the generated entry point is placed
+    }
+}
+
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation 'androidx.appcompat:appcompat:1.0.2'
+    implementation 'androidx.core:core-ktx:1.0.2'
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+
+    // Dagger
+    api "com.google.dagger:dagger:$daggerVersion"
+    kapt "com.google.dagger:dagger-compiler:$daggerVersion"
+    kaptAndroidTest "com.google.dagger:dagger-compiler:$daggerVersion"
+
+    // SQLDelight: Generates typesafe Kotlin APIs from SQL - https://github.com/square/sqldelight
+    implementation "com.squareup.sqldelight:android-driver:$sqlDelightVersion"
+    testImplementation "com.squareup.sqldelight:sqlite-driver:$sqlDelightVersion"
+
+}
+//afterEvaluate {
+
+    tasks.all {
+        if (it.name.contains("StoreDatabaseInterface")) {
+            println("Delaying task!! $it")
+            it.doFirst{sleep(7000)}
+        }
+    }
+//}

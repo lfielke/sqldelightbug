@@ -1,0 +1,86 @@
+import com.example.sqldelightbuildbug.EntryOrigin;
+
+
+CREATE TABLE entries (
+  entry_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  key TEXT NOT NULL,
+  origin INTEGER AS EntryOrigin NOT NULL,
+  complete INTEGER AS Boolean NOT NULL, 
+  dirty INTEGER AS Boolean NOT NULL, 
+  expected_size INTEGER, 
+  file_size INTEGER NOT NULL,
+  etag TEXT, 
+  httpLastModified INTEGER,
+  md5 TEXT,
+  edition TEXT,
+  expires INTEGER 
+);
+
+CREATE UNIQUE INDEX entries_key ON entries (key, complete);
+
+selectAll:
+SELECT * FROM entries
+WHERE complete=?;
+
+selectCountEntries:
+SELECT COUNT(*) FROM entries;
+
+insertIncomplete:
+INSERT INTO entries(complete, dirty, file_size, expected_size, key, origin, etag, httpLastModified, md5, edition, expires)
+VALUES (0, 1, 0, ?, ?, ?, ?, ?, ?, ?, ?);
+
+lastInsertRowId:
+SELECT last_insert_rowid();
+
+deleteByEntryId:
+DELETE FROM entries
+WHERE entry_id=?;
+
+deleteCompleteEntry:
+DELETE FROM entries
+WHERE key=? AND complete=1;
+
+deletePartialEntry:
+DELETE FROM entries
+WHERE key=? AND complete=0;
+
+setPartialSizeClean:
+UPDATE entries
+SET file_size=?, dirty=0
+WHERE key=? AND complete=0;
+
+setCompleteAndClean:
+UPDATE entries
+SET complete=1, file_size=?, dirty=0
+WHERE key=? AND complete=0;
+
+isComplete:
+SELECT COUNT(*) FROM entries
+WHERE key=? AND complete=1;
+
+partialInfo:
+SELECT entry_id, origin, key, expected_size, md5, edition, etag, httpLastModified FROM entries
+WHERE key=? AND complete=0;
+
+entryIdForComplete:
+SELECT entry_id FROM entries
+WHERE key=? AND complete=1;
+
+entryIdForPartial:
+SELECT entry_id FROM entries
+WHERE key=? AND complete=0;
+
+totalSizeUsed:
+SELECT SUM(file_size) FROM entries;
+
+selectDirtyEntryIds:
+SELECT entry_id FROM entries
+WHERE dirty=1;
+
+selectAllForIntegrityCheck:
+SELECT entry_id, file_size, dirty FROM entries;
+
+setSizeAndCleanByEntryId:
+UPDATE entries
+SET file_size=?, dirty=0
+WHERE entry_id=?;

@@ -1,0 +1,4 @@
+include ':app', ':mylibrary'
+//include ':downloads'
+//include ':core'
+rootProject.name='SqlDelightBuildBug'
